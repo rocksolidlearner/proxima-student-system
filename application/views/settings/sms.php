@@ -7,7 +7,7 @@
     <?php } ?>
 </script>
 <style>
-	.twillio,.voodoosms{
+	.twillio,.voodoosms,.gateway-meta{
 		display: none;
 	}
 </style>
@@ -70,13 +70,13 @@
                         </div>
 					</div>
 					
-					<div class="col-md-4 twillio">
-                    	<label class="control-label">SMS Header</label>
+					<div class="col-md-4 gateway-meta">
+                    	<label class="control-label">SMS Sender / Header</label>
                         <div class="form-group">
 							<input type="text" name="sms_header" value="<?=$this->data['sms_setting']['sms_header']?>" class="form-control" id="sms_header">
                         </div>
 					</div>
-					<div class="col-md-4 twillio">
+					<div class="col-md-4 gateway-meta">
                     	<label class="control-label">SMS Footer</label>
                         <div class="form-group">
 							<input type="text" name="sms_footer" value="<?=$this->data['sms_setting']['sms_footer']?>" class="form-control" id="sms_footer">
@@ -98,23 +98,29 @@
 		if ($('#gateway').val() == <?=TWILLIO?>) {
 			$('.voodoosms').hide(500);
 			$('.twillio').show(500);
+			$('.gateway-meta').show(500);
 		}else if ($('#gateway').val() == <?=VOODOOSMS?>){
 			$('.twillio').hide(500);
 			$('.voodoosms').show(500);
+			$('.gateway-meta').show(500);
 		}else{
 			$('.voodoosms').hide(500);
 			$('.twillio').hide(500);
+			$('.gateway-meta').hide(500);
 		}
 		$('#gateway').change(function() {
 			if ($(this).val() == <?=TWILLIO?>) {
 				$('.voodoosms').hide(500);
 				$('.twillio').show(500);
+				$('.gateway-meta').show(500);
 			}else if ($(this).val() == <?=VOODOOSMS?>){
 				$('.twillio').hide(500);
 				$('.voodoosms').show(500);
+				$('.gateway-meta').show(500);
 			}else{
 				$('.voodoosms').hide(500);
 				$('.twillio').hide(500);
+				$('.gateway-meta').hide(500);
 			}
 		})
 	})

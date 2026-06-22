@@ -14,9 +14,45 @@ class Student extends Admin_Controller{
         parent::__construct();
         $this->load->model('Subject_model');
         $this->load->model('Class_model','class');
-        $this->twilio = new Client($this->data['sms_setting']['twillio_sid'], $this->data['sms_setting']['twillio_auth']);
-        $this->from = $this->data['sms_setting']['twillio_phone'];
+        $this->twilio = null;
+        $this->from = isset($this->data['sms_setting']['twillio_phone']) ? $this->data['sms_setting']['twillio_phone'] : '';
+        if (
+            !empty($this->data['sms_setting']['gateway']) &&
+            (int)$this->data['sms_setting']['gateway'] === TWILLIO &&
+            !empty($this->data['sms_setting']['twillio_sid']) &&
+            !empty($this->data['sms_setting']['twillio_auth'])
+        ) {
+            $this->twilio = new Client($this->data['sms_setting']['twillio_sid'], $this->data['sms_setting']['twillio_auth']);
+        }
     } 
+
+    private function getSmsBody($message)
+    {
+        $header = trim((string)$this->data['sms_setting']['sms_header']);
+        $footer = trim((string)$this->data['sms_setting']['sms_footer']);
+        $parts = array();
+
+        if ($header !== '') {
+            $parts[] = $header;
+        }
+        $parts[] = trim((string)$message);
+        if ($footer !== '') {
+            $parts[] = $footer;
+        }
+
+        return trim(implode("\n", $parts));
+    }
+
+    private function getVoodooOriginator()
+    {
+        $originator = trim((string)$this->data['sms_setting']['sms_header']);
+        if ($originator === '') {
+            $originator = 'Cranbrook';
+        }
+
+        // Voodoo SMS sender IDs are short; keep alphanumeric sender IDs concise.
+        return substr(preg_replace('/[^A-Za-z0-9]/', '', $originator), 0, 11);
+    }
 
     /*
      * Listing of students
@@ -392,69 +428,84 @@ class Student extends Admin_Controller{
 
     function sendSMS()
     {
-        // $uid = htmlspecialchars($this->data['sms_setting']['sms_username']);
-        // $pass = htmlspecialchars($this->data['sms_setting']['sms_password']);
-        // $url = 'https://www.voodoosms.com/vapi/server/getSMS?uid='.$uid.'&pass='.$pass.'&format=JSON';
+        $phone_number = trim((string)$this->input->post('phone_number'));
+        $message = trim((string)$this->input->post('message'));
 
-        // $ch = curl_init();
-        // curl_setopt($ch, CURLOPT_URL, $url);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        // Download the given URL, and return output
-        // $output = curl_exec($ch);
-        // echo "<pre>";print_r($output->message);exit();
-        // echo $output . "   " . curl_error($ch);
-        // Close the cURL resource, and free system resources
-        // curl_close($ch);exit();
+        if ($phone_number === '') {
+            $this->session->set_flashdata('info', 'Student phone number is missing!');
+            redirect('student');
+        }
+
+        if ($message === '') {
+            $this->session->set_flashdata('info', 'SMS message is required!');
+            redirect('student');
+        }
+
+        $smsBody = $this->getSmsBody($message);
+
         if ($this->data['sms_setting']['gateway'] == TWILLIO) {
-            if (empty($_POST['phone_number'])) {
-                $this->session->set_flashdata('info', 'Student Phone number is missing!'); 
-                    redirect('student');
-            }else{
-                // echo "Twilio"; print_r($_POST);exit();
+            if (empty($this->twilio) || empty($this->from)) {
+                $this->session->set_flashdata('info', 'Twilio SMS settings are incomplete.');
+                redirect('student');
+            } else {
                 $send_message = $this->twilio->messages->create(
-                    $_POST['phone_number'],
+                    $phone_number,
                     [
                         'from' =>  $this->from,
-                        'body' => $_POST['message']
+                        'body' => $smsBody
                     ]
                 );
                 if ($send_message->sid) {
-                    $this->session->set_flashdata('success', 'New message sent!'); 
+                    $this->session->set_flashdata('success', 'New message sent!');
                     redirect('student');
                 }
             }
         }elseif ($this->data['sms_setting']['gateway'] == VOODOOSMS) {
-            if (empty($_POST['phone_number'])) {
-                $this->session->set_flashdata('info', 'Student Phone number is missing!'); 
-                    redirect('student');
-            }else{
-                $dest=$_POST['phone_number'];
-                $orig="TestingAPI";
-                $msg=$_POST['message'];
-                $pass=$this->data['sms_setting']['sms_password'];
-                $uid=$this->data['sms_setting']['sms_username'];
-                $format = 'JSON';
-
-                $url = 'https://www.voodoosms.com/vapi/server/sendSMS?uid='.$uid.'&pass='.$pass.'&dest='.$dest.'&orig='.$orig."&msg=".$msg."&format=".$format;
-
-                // $url = 'https://www.voodoosms.com/vapi/server/sendWebSMS?uid='.$uid.'&pass='.$pass.'&orig='.$orig.'&name='.$name.'&file='.$file.'&locid='.$locid.'&format='.$format.'&msg='.$msg;
+            if (empty($this->data['sms_setting']['sms_username']) || empty($this->data['sms_setting']['sms_password'])) {
+                $this->session->set_flashdata('info', 'Voodoo SMS settings are incomplete.');
+                redirect('student');
+            } else {
+                $query = http_build_query(array(
+                    'uid' => $this->data['sms_setting']['sms_username'],
+                    'pass' => $this->data['sms_setting']['sms_password'],
+                    'dest' => $phone_number,
+                    'orig' => $this->getVoodooOriginator(),
+                    'msg' => $smsBody,
+                    'format' => 'JSON',
+                ));
+                $url = 'https://www.voodoosms.com/vapi/server/sendSMS?'.$query;
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-                // Download the given URL, and return output
                 $output = curl_exec($ch);
-                if ($output) {
-                    $this->session->set_flashdata('success', 'New message sent!'); 
+                $curlError = curl_error($ch);
+                curl_close($ch);
+
+                if ($output === false) {
+                    $this->session->set_flashdata('info', 'Voodoo SMS request failed: '.$curlError);
                     redirect('student');
                 }
-                 // echo "voodooSMS"; print_r($result);exit();
-                // echo($result);
-                //close connection
-                curl_close($ch);
+
+                $result = json_decode($output, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $status = isset($result['status']) ? strtolower((string)$result['status']) : '';
+                    $error = isset($result['error']) ? trim((string)$result['error']) : '';
+                    if ($error !== '' || $status === 'error' || $status === 'failed') {
+                        $this->session->set_flashdata('info', 'Voodoo SMS error: '.($error !== '' ? $error : 'message not accepted by gateway.'));
+                        redirect('student');
+                    }
+                }
+
+                $this->session->set_flashdata('success', 'New message sent!');
+                redirect('student');
             }
 
+        } else {
+            $this->session->set_flashdata('info', 'Please configure an SMS gateway first.');
+            redirect('student');
         }
             
     }
