@@ -1,0 +1,78 @@
+.DS_Store
+
+application/cache/*
+!application/cache/index.html
+!application/cache/.htaccess
+
+application/logs/*
+!application/logs/index.html
+!application/logs/.htaccess
+
+user_guide_src/build/*
+user_guide_src/cilexer/build/*
+user_guide_src/cilexer/dist/*
+user_guide_src/cilexer/pycilexer.egg-info/*
+/vendor/
+
+# IDE Files
+#-------------------------
+/nbproject/
+.idea/*
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Hosting account and server runtime data
+/.appdata/
+/.cagefs/
+/.cl.selector/
+/.clwpos/
+/.cpanel/
+/.cphorde/
+/.spamassassin/
+/.subaccounts/
+/.trash/
+/cgi-bin/
+/etc/
+/logs/
+/mail/
+/public_ftp/
+/ssl/
+/tmp/
+/vim/
+
+# Backups and archives
+/backupp/
+/application_backups/
+/cranbrookcollege.uk/
+*.zip
+*.tar
+*.gz
+
+# Runtime files and logs
+error_log
+**/error_log
+*.log
+
+# Local environment files
+/.bash_logout
+/.bash_profile
+/.bashrc
+/.contactemail
+/.imunify_patch_id
+/.inplace
+/.md5sum
+/.myimunify_id
+/.spamassassinboxenable
+/.spamassassinenable
+/.zshrc
+.lastlogin
+.bash_history
+.zsh_history
+
+# Generated or user-uploaded content
+/uploads/
