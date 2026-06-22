@@ -9,7 +9,8 @@ class Dashboard extends Admin_Controller{
     function __construct()
     {
         parent::__construct();
-    } 
+        $this->load->model('Contacts_model', 'contacts');
+    }
 
     function index()
     {
@@ -17,8 +18,8 @@ class Dashboard extends Admin_Controller{
         $data['expense'] = $this->dashboard->get_total_expenses();
         $data['fee'] = $this->dashboard->get_total_fee();
         $data['profit'] = number_format($data['fee']['total_fee']-$data['expense']['total_expenses'],2);
-        // $data['payment'] = $this->client->payments()->list()->records;
-        // echo"<pre>";print_r($data['expense']);exit();
+        $data['crm_summary'] = $this->contacts->get_summary();
+        $data['recent_contacts'] = $this->contacts->get_recent_contacts(8);
         $data['_view'] = 'dashboard';
         $this->load->view('layouts/main',$data);
     }

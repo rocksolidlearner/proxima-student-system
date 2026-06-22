@@ -1,9 +1,3 @@
-<script type="text/javascript" src="http://js.nicedit.com/nicEdit-latest.js"></script> 
-<script type="text/javascript">
-    bkLib.onDomLoaded(function () {
-        nicEditors.allTextAreas()
-    });
-</script>
 <script type="text/javascript">
     <?php if($this->session->flashdata('info')){  ?>
     toastr.info("<?php echo $this->session->flashdata('info'); ?>");
@@ -26,7 +20,7 @@
                 <div class="row">
                     <div class="col-md-6 col-sm-12">
                         <div class="item form-group">
-                            <label class="col-form-label col-sm-3 label-align">contact Name <span class="required">*</span></label>
+                            <label class="col-form-label col-sm-3 label-align">Contact Name <span class="required">*</span></label>
                             <div class="col-sm-9">
                                 <div class="input-group">
                                     <input type="text" name="contact_name" class="form-control" value="<?=($this->input->post('contact_name') ? $this->input->post('contact_name') : $contact['contact_name']);?>" >
@@ -35,9 +29,9 @@
                             </div>
                         </div>
                         <div class="item form-group">
-                            <label class="col-form-label col-sm-3 label-align">Date (<?=$contact['date']?>)</label>
+                            <label class="col-form-label col-sm-3 label-align">Created Date</label>
                             <div class="col-sm-9">
-                                <input type="text" name="date" id="date_picker" class="date_picker form-control">
+                                <input type="text" name="date" id="date_picker" class="date_picker form-control" value="<?=($this->input->post('date') ? $this->input->post('date') : $contact['date']);?>">
                             </div>
                         </div>
                         <div class="item form-group">
@@ -77,6 +71,38 @@
                             </div>
                         </div>
                         <div class="item form-group">
+                            <label class="col-form-label col-sm-3 label-align">Interaction</label>
+                            <div class="col-sm-9">
+                                <select name="interaction_type" class="form-control">
+                                    <option value="">Select interaction</option>
+                                    <?php foreach($interaction_types as $type){ ?>
+                                        <option value="<?=$type?>" <?=($this->input->post('interaction_type') ? $this->input->post('interaction_type') : $contact['interaction_type']) == $type ? 'selected' : ''?>><?=$type?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="item form-group">
+                            <label class="col-form-label col-sm-3 label-align">Preferred Channel</label>
+                            <div class="col-sm-9">
+                                <select name="preferred_channel" class="form-control">
+                                    <option value="">Select channel</option>
+                                    <?php foreach($preferred_channels as $channel){ ?>
+                                        <option value="<?=$channel?>" <?=($this->input->post('preferred_channel') ? $this->input->post('preferred_channel') : $contact['preferred_channel']) == $channel ? 'selected' : ''?>><?=$channel?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="item form-group">
+                            <label class="col-form-label col-sm-3 label-align">Priority</label>
+                            <div class="col-sm-9">
+                                <select name="priority" class="form-control">
+                                    <?php foreach($priorities as $priority){ ?>
+                                        <option value="<?=$priority?>" <?=($this->input->post('priority') ? $this->input->post('priority') : $contact['priority']) == $priority ? 'selected' : (($priority == 'Medium' && empty($contact['priority']) && !$this->input->post('priority')) ? 'selected' : '')?>><?=$priority?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="item form-group">
                             <label class="col-form-label col-sm-3 label-align">Status</label>
                             <div class="col-sm-9">
                                 <p style="margin-top: 8px">
@@ -96,6 +122,23 @@
                         
                     </div>
                     <div class="col-md-6 col-sm-12">
+                        <div class="item form-group">
+                            <label class="col-form-label col-sm-3 label-align">Follow Up</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="follow_up_date" class="date_picker form-control" value="<?=($this->input->post('follow_up_date') ? $this->input->post('follow_up_date') : $contact['follow_up_date']);?>">
+                            </div>
+                        </div>
+                        <div class="item form-group">
+                            <label class="col-form-label col-sm-3 label-align">Assigned To</label>
+                            <div class="col-sm-9">
+                                <select name="assigned_user_id" class="form-control select2" style="width: 100%">
+                                    <option value="">Unassigned</option>
+                                    <?php foreach($users as $user){ ?>
+                                        <option value="<?=$user['id']?>" <?=((string)($this->input->post('assigned_user_id') ? $this->input->post('assigned_user_id') : $contact['assigned_user_id']) === (string)$user['id']) ? 'selected' : ''?>><?=$user['name']?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-form-label">Address</label>
                             <textarea name="address" rows="3" class="form-control" style="resize: none;"><?=($this->input->post('address') ? $this->input->post('address') : $contact['address']);?></textarea>
@@ -120,21 +163,4 @@
         </div>
     </div>
 </div>
-<script>
-    function get_img() {
-        $('#prof_img').click();
-    }
-    function readURL(input) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function (e) {
-                $('#blah')
-                    .attr('src', e.target.result);
-            };
-
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-</script>
 

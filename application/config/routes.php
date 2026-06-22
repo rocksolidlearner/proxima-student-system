@@ -141,6 +141,8 @@ $route['call-log'] = 'contacts/index';
 $route['contact-add'] = 'contacts/add';
 $route['contact-edit/(:any)'] = 'contacts/edit/$1';
 $route['contact-remove/(:any)'] = 'contacts/remove/$1';
+$route['contact-send-sms'] = 'contacts/sendSMS';
+$route['contact-send-email'] = 'contacts/send_email';
 // end
 
 $route['report-bug'] = 'help/report_bug';
