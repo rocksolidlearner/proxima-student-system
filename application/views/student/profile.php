@@ -8,6 +8,30 @@
     background-color: #c00 !important;
     color: #fff;
 }
+.portfolio-stat {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+.portfolio-timeline-item {
+    border-left: 4px solid #2f6fed;
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+}
+.portfolio-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #eef3ff;
+    color: #2f6fed;
+    font-size: 12px;
+    margin: 0 6px 6px 0;
+}
 </style>
 <?php $id = urlencode(base64_encode($student['id'])); ?>
 <div class="row">
@@ -31,6 +55,9 @@
                     </li>
                     <li>
                         <a data-toggle="modal" data-target="#emailModal"  href="#"  title="Send Email"><button class="btn btn-sm btn-danger"><i class="fa fa-envelope"></i> Send Email</button></a>
+                    </li>
+                    <li>
+                        <a data-toggle="modal" data-target="#portfolioModal" href="#"><button class="btn btn-sm btn-info"><i class="fa fa-folder-open"></i> Add ePortfolio</button></a>
                     </li>
                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                     </li>
@@ -672,6 +699,87 @@
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-4 col-sm-6">
+        <div class="portfolio-stat">
+            <small class="text-muted">Portfolio Entries</small>
+            <h3><?=$portfolio_summary['total_items']?></h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="portfolio-stat">
+            <small class="text-muted">Categories Used</small>
+            <h3><?=$portfolio_summary['category_count']?></h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <div class="portfolio-stat">
+            <small class="text-muted">Files Uploaded</small>
+            <h3><?=$portfolio_summary['uploads_count']?></h3>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Student ePortfolio <small>Evidence, reflections, uploads and progress history</small></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <a data-toggle="modal" data-target="#portfolioModal" href="#"><button class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Add Entry</button></a>
+                    </li>
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <?php if(!empty($portfolio_items)){ foreach($portfolio_items as $item){ ?>
+                    <div class="portfolio-timeline-item">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <h4 style="margin-top: 0;"><?=$item['title']?></h4>
+                                <p class="text-muted" style="margin-bottom: 8px;">
+                                    <?=date('d-M-Y', strtotime($item['entry_date']))?>
+                                    <?php if(!empty($item['created_by_name'])){ ?> | Added by <?=$item['created_by_name']?><?php } ?>
+                                </p>
+                                <?php if(!empty($item['category'])){ ?><span class="portfolio-tag"><?=$item['category']?></span><?php } ?>
+                                <?php if(!empty($item['evidence_type'])){ ?><span class="portfolio-tag"><?=$item['evidence_type']?></span><?php } ?>
+                                <?php if(!empty($item['grade'])){ ?><span class="portfolio-tag">Grade: <?=$item['grade']?></span><?php } ?>
+                                <?php if(!empty($item['tag_list'])){ foreach(explode(',', $item['tag_list']) as $tag){ $tag = trim($tag); if($tag !== ''){ ?><span class="portfolio-tag"><?=$tag?></span><?php }} } ?>
+                                <?php if(!empty($item['summary'])){ ?>
+                                    <div style="margin-top: 12px;">
+                                        <strong>Summary</strong>
+                                        <p><?=nl2br(htmlspecialchars($item['summary'], ENT_QUOTES, 'UTF-8'))?></p>
+                                    </div>
+                                <?php } ?>
+                                <?php if(!empty($item['teacher_note'])){ ?>
+                                    <div style="margin-top: 12px;">
+                                        <strong>Teacher Note</strong>
+                                        <p><?=nl2br(htmlspecialchars($item['teacher_note'], ENT_QUOTES, 'UTF-8'))?></p>
+                                    </div>
+                                <?php } ?>
+                                <?php if(!empty($item['student_reflection'])){ ?>
+                                    <div style="margin-top: 12px;">
+                                        <strong>Student Reflection</strong>
+                                        <p><?=nl2br(htmlspecialchars($item['student_reflection'], ENT_QUOTES, 'UTF-8'))?></p>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <?php if(!empty($item['file_name'])){ ?>
+                                    <a href="<?=base_url('student-portfolio-download/'.$id.'/'.$item['id'])?>" class="btn btn-sm btn-success"><i class="fa fa-download"></i> Download</a>
+                                <?php } ?>
+                                <a href="<?=base_url('student-portfolio-remove/'.$id.'/'.$item['id'])?>" class="btn btn-sm btn-danger" onclick="return confirm('Remove this ePortfolio entry?')"><i class="fa fa-trash"></i> Remove</a>
+                            </div>
+                        </div>
+                    </div>
+                <?php }}else{ ?>
+                    <div class="alert alert-info">No ePortfolio entries yet. Add the first evidence item, reflection or assessment record for this student.</div>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="smsModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -772,6 +880,97 @@
                 <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-close"></i> Close</button>
             </div>
             <?php echo form_close(); ?>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="portfolioModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add ePortfolio Entry</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <?=form_open_multipart('student-portfolio-add/'.$id)?>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Entry Date</label>
+                            <input type="text" name="entry_date" class="date_picker form-control" value="<?=date('Y-m-d')?>" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select name="category" class="form-control">
+                                <option value="">Select category</option>
+                                <?php foreach($portfolio_categories as $category){ ?>
+                                    <option value="<?=$category?>"><?=$category?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Evidence Type</label>
+                            <select name="evidence_type" class="form-control">
+                                <option value="">Select evidence type</option>
+                                <?php foreach($portfolio_evidence_types as $type){ ?>
+                                    <option value="<?=$type?>"><?=$type?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Grade / Outcome</label>
+                            <input type="text" name="grade" class="form-control" placeholder="A, Pass, Excellent, 85%">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Tags</label>
+                            <input type="text" name="tag_list" class="form-control" placeholder="reading, teamwork, science fair, presentation">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Summary</label>
+                            <textarea name="summary" rows="3" class="form-control" placeholder="Short description of this evidence or achievement"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Teacher Note</label>
+                            <textarea name="teacher_note" rows="4" class="form-control" placeholder="Feedback, observation, assessment note"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Student Reflection</label>
+                            <textarea name="student_reflection" rows="4" class="form-control" placeholder="Student reflection or personal response"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Upload Evidence File</label>
+                            <input type="file" name="portfolio_file" class="form-control">
+                            <small class="text-muted">Supported: jpg, png, gif, pdf, doc, docx, xls, xlsx, ppt, pptx, txt, zip</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save Entry</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            <?=form_close()?>
         </div>
     </div>
 </div>

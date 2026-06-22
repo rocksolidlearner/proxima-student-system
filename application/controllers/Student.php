@@ -14,6 +14,7 @@ class Student extends Admin_Controller{
         parent::__construct();
         $this->load->model('Subject_model');
         $this->load->model('Class_model','class');
+        $this->load->model('Student_portfolio_model', 'portfolio');
         $this->twilio = null;
         $this->from = isset($this->data['sms_setting']['twillio_phone']) ? $this->data['sms_setting']['twillio_phone'] : '';
         if (
@@ -111,6 +112,45 @@ class Student extends Admin_Controller{
         return $result;
     }
 
+    private function getPortfolioCategories()
+    {
+        return array('Assessment', 'Project', 'Homework', 'Attendance', 'Achievement', 'Behaviour', 'Pastoral', 'General');
+    }
+
+    private function getPortfolioEvidenceTypes()
+    {
+        return array('File Upload', 'Teacher Observation', 'Assessment Evidence', 'Reflection', 'Certificate', 'Photo');
+    }
+
+    private function uploadPortfolioFile()
+    {
+        if (empty($_FILES['portfolio_file']['name'])) {
+            return '';
+        }
+
+        $uploadPath = FCPATH . 'uploads/eportfolio';
+        if (!is_dir($uploadPath)) {
+            @mkdir($uploadPath, 0775, true);
+        }
+
+        $config = array(
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'jpg|jpeg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip',
+            'encrypt_name' => true,
+            'max_size' => 10240,
+        );
+
+        $this->load->library('upload');
+        $this->upload->initialize($config);
+        if (!$this->upload->do_upload('portfolio_file')) {
+            $this->session->set_flashdata('info', $this->upload->display_errors('', ''));
+            return false;
+        }
+
+        $uploadData = $this->upload->data();
+        return $uploadData['file_name'];
+    }
+
     /*
      * Listing of students
      */
@@ -163,11 +203,16 @@ class Student extends Admin_Controller{
     {
         $id = base64_decode(urldecode($sid));
         $this->student->ensure_guardian_emergency_columns();
+        $this->portfolio->ensure_table();
         $data['student'] = $this->admin->get_record('students',$id);
         $data['guardian'] = $this->student->get_std_guardian($id);
         $data['classes'] = $this->admin->get_all_records('classes');
         $data['std_subject'] = $this->Subject_model->get_std_subject($id);
         $data['subjects'] = $this->Subject_model->get_subject_by_class($data['student']['class_id']);
+        $data['portfolio_items'] = $this->portfolio->get_by_student($id);
+        $data['portfolio_summary'] = $this->portfolio->get_summary($id);
+        $data['portfolio_categories'] = $this->getPortfolioCategories();
+        $data['portfolio_evidence_types'] = $this->getPortfolioEvidenceTypes();
         // echo "<pre>";print_r($data['student']);exit();
         
         $this->load->library('form_validation');
@@ -246,6 +291,85 @@ class Student extends Admin_Controller{
             $data['_view'] = 'student/profile';
             $this->load->view('layouts/main',$data);
         }
+    }
+
+    function add_portfolio($sid)
+    {
+        $studentId = base64_decode(urldecode($sid));
+        $student = $this->admin->get_record('students', $studentId);
+        if (empty($student)) {
+            show_error('The student you are trying to update does not exist.');
+        }
+
+        $this->portfolio->ensure_table();
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('title', 'Portfolio Title', 'required');
+        $this->form_validation->set_rules('entry_date', 'Entry Date', 'required');
+
+        if (!$this->form_validation->run()) {
+            $this->session->set_flashdata('info', validation_errors(' ', ' '));
+            redirect('student-profile/' . $sid);
+        }
+
+        $fileName = $this->uploadPortfolioFile();
+        if ($fileName === false) {
+            redirect('student-profile/' . $sid);
+        }
+
+        $params = array(
+            'student_id' => $studentId,
+            'title' => $this->input->post('title'),
+            'entry_date' => $this->input->post('entry_date'),
+            'category' => $this->input->post('category'),
+            'tag_list' => $this->input->post('tag_list'),
+            'evidence_type' => $this->input->post('evidence_type'),
+            'summary' => $this->input->post('summary'),
+            'teacher_note' => $this->input->post('teacher_note'),
+            'student_reflection' => $this->input->post('student_reflection'),
+            'grade' => $this->input->post('grade'),
+            'file_name' => $fileName,
+            'created_by' => $this->session->userdata('id'),
+        );
+
+        $this->portfolio->add($params);
+        $this->session->set_flashdata('success', 'Student ePortfolio entry added successfully.');
+        redirect('student-profile/' . $sid);
+    }
+
+    function portfolio_download($sid, $portfolioId)
+    {
+        $studentId = base64_decode(urldecode($sid));
+        $student = $this->admin->get_record('students', $studentId);
+        $portfolio = $this->portfolio->get($portfolioId);
+
+        if (empty($student) || empty($portfolio) || (int)$portfolio['student_id'] !== (int)$studentId || empty($portfolio['file_name'])) {
+            show_error('The portfolio file you are trying to download does not exist.');
+        }
+
+        $this->load->helper('download');
+        $fullPath = FCPATH . 'uploads/eportfolio/' . $portfolio['file_name'];
+        force_download($portfolio['file_name'], file_get_contents($fullPath));
+    }
+
+    function portfolio_remove($sid, $portfolioId)
+    {
+        $studentId = base64_decode(urldecode($sid));
+        $portfolio = $this->portfolio->get($portfolioId);
+
+        if (empty($portfolio) || (int)$portfolio['student_id'] !== (int)$studentId) {
+            show_error('The portfolio record you are trying to remove does not exist.');
+        }
+
+        if (!empty($portfolio['file_name'])) {
+            $filePath = FCPATH . 'uploads/eportfolio/' . $portfolio['file_name'];
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $this->portfolio->remove($portfolioId);
+        $this->session->set_flashdata('success', 'Student ePortfolio entry removed successfully.');
+        redirect('student-profile/' . $sid);
     }
 
     function get_subjects()
