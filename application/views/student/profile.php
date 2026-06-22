@@ -552,6 +552,58 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>
+                            Emergency Contact Name
+                        </td>
+                        <td>
+                            <input type="text" name="emergency_contact_name" value="<?=isset($guardian['emergency_contact_name']) ? $guardian['emergency_contact_name'] : ''?>" class="form-control">
+                        </td>
+                        <td>
+                        <span class="text-muted">
+                            Emergency contact full name
+                        </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Emergency Relationship
+                        </td>
+                        <td>
+                            <input type="text" name="emergency_contact_relationship" value="<?=isset($guardian['emergency_contact_relationship']) ? $guardian['emergency_contact_relationship'] : ''?>" class="form-control">
+                        </td>
+                        <td>
+                        <span class="text-muted">
+                            Relationship to the student
+                        </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Emergency Contact Phone
+                        </td>
+                        <td>
+                            <input type="text" name="emergency_contact_phone" value="<?=isset($guardian['emergency_contact_phone']) ? $guardian['emergency_contact_phone'] : ''?>" class="form-control">
+                        </td>
+                        <td>
+                        <span class="text-muted">
+                            Main emergency phone number
+                        </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Emergency Contact Email
+                        </td>
+                        <td>
+                            <input type="email" name="emergency_contact_email" value="<?=isset($guardian['emergency_contact_email']) ? $guardian['emergency_contact_email'] : ''?>" class="form-control">
+                        </td>
+                        <td>
+                        <span class="text-muted">
+                            Emergency contact email address
+                        </span>
+                        </td>
+                    </tr>
+                    <tr>
                         <th colspan="3" class="invertblack">
                             <i class="fa fa-chevron-circle-down"></i> Previous Education
                         </th>

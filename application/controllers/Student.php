@@ -69,6 +69,7 @@ class Student extends Admin_Controller{
     function profile($sid)
     {
         $id = base64_decode(urldecode($sid));
+        $this->student->ensure_guardian_emergency_columns();
         $data['student'] = $this->admin->get_record('students',$id);
         $data['guardian'] = $this->student->get_std_guardian($id);
         $data['classes'] = $this->admin->get_all_records('classes');
@@ -134,6 +135,10 @@ class Student extends Admin_Controller{
                 'phone' => $this->input->post('gphone'),
                 'mobile' => $this->input->post('gmobile'),
                 'email' => $this->input->post('gemail'),
+                'emergency_contact_name' => $this->input->post('emergency_contact_name'),
+                'emergency_contact_relationship' => $this->input->post('emergency_contact_relationship'),
+                'emergency_contact_phone' => $this->input->post('emergency_contact_phone'),
+                'emergency_contact_email' => $this->input->post('emergency_contact_email'),
             );
             $guardain_id = $this->student->update_std_guardian($data['guardian']['guardian_id'],$guardian);
             // if ($this->input->post('subject_id')) {
@@ -168,6 +173,7 @@ class Student extends Admin_Controller{
     function add()
     {   
         $this->load->library('form_validation');
+        $this->student->ensure_guardian_emergency_columns();
 
 		$this->form_validation->set_rules('admission_no','Admission No.','required');
         $this->form_validation->set_rules('roll_no','Roll Number','required');
@@ -235,6 +241,10 @@ class Student extends Admin_Controller{
                 'state' => $this->input->post('gstate'),
                 'mobile' => $this->input->post('gmobile'),
                 'email' => $this->input->post('gemail'),
+                'emergency_contact_name' => $this->input->post('emergency_contact_name'),
+                'emergency_contact_relationship' => $this->input->post('emergency_contact_relationship'),
+                'emergency_contact_phone' => $this->input->post('emergency_contact_phone'),
+                'emergency_contact_email' => $this->input->post('emergency_contact_email'),
                 'role' => GUARDIAN,
             );
             $guardian_id = $this->admin->add_record('guardians',$guardian);

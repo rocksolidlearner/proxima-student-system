@@ -53,6 +53,24 @@ class Student_model extends CI_Model
         return $this->db->get_where('std_guardians')->row_array();
     } 
 
+    function ensure_guardian_emergency_columns()
+    {
+        $columns = array(
+            'emergency_contact_name' => "ALTER TABLE guardians ADD COLUMN emergency_contact_name VARCHAR(255) NULL AFTER email",
+            'emergency_contact_relationship' => "ALTER TABLE guardians ADD COLUMN emergency_contact_relationship VARCHAR(100) NULL AFTER emergency_contact_name",
+            'emergency_contact_phone' => "ALTER TABLE guardians ADD COLUMN emergency_contact_phone VARCHAR(50) NULL AFTER emergency_contact_relationship",
+            'emergency_contact_email' => "ALTER TABLE guardians ADD COLUMN emergency_contact_email VARCHAR(255) NULL AFTER emergency_contact_phone",
+        );
+
+        foreach ($columns as $field => $query) {
+            if (!$this->db->field_exists($field, 'guardians')) {
+                $this->db->query($query);
+            }
+        }
+
+        return array_keys($columns);
+    }
+
     function get_admission_no()
     {
         return $this->db->select('admission_no')

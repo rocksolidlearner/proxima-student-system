@@ -352,6 +352,30 @@ form label {
                     </div>
                 </div>
                 <div class="item form-group">
+                    <label class="col-sm-3 control-label">Emergency Contact Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="emergency_contact_name" value="<?=$this->input->post('emergency_contact_name'); ?>" class="form-control" placeholder="Emergency Contact Name">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="col-sm-3 control-label">Emergency Relationship</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="emergency_contact_relationship" value="<?=$this->input->post('emergency_contact_relationship'); ?>" class="form-control" placeholder="Relationship to Student">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="col-sm-3 control-label">Emergency Contact Phone</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="emergency_contact_phone" value="<?=$this->input->post('emergency_contact_phone') ? $this->input->post('emergency_contact_phone') : '+44'; ?>" class="form-control" placeholder="+44">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="col-sm-3 control-label">Emergency Contact Email</label>
+                    <div class="col-sm-9">
+                        <input type="email" name="emergency_contact_email" value="<?=$this->input->post('emergency_contact_email'); ?>" class="form-control" placeholder="Emergency Contact Email">
+                    </div>
+                </div>
+                <div class="item form-group">
                     <label class="col-sm-3 control-label">Birth of Birth</label>
                     <div class="col-sm-9">
                         <input type="text" name="birthday" value="<?=$this->input->post('birthday'); ?>" id="date_picker" class="date_picker form-control" placeholder="Birthday of Guardian">
