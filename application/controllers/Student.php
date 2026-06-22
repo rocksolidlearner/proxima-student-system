@@ -54,6 +54,63 @@ class Student extends Admin_Controller{
         return substr(preg_replace('/[^A-Za-z0-9]/', '', $originator), 0, 11);
     }
 
+    private function normalizeVoodooDestination($phoneNumber)
+    {
+        $phoneNumber = trim((string)$phoneNumber);
+        $phoneNumber = preg_replace('/[^\d+]/', '', $phoneNumber);
+
+        if (strpos($phoneNumber, '00') === 0) {
+            return '+' . substr($phoneNumber, 2);
+        }
+
+        if (strpos($phoneNumber, '+') === 0) {
+            return $phoneNumber;
+        }
+
+        if (strpos($phoneNumber, '0') === 0) {
+            return '+44' . substr($phoneNumber, 1);
+        }
+
+        if (strlen($phoneNumber) === 10) {
+            return '+44' . $phoneNumber;
+        }
+
+        return $phoneNumber;
+    }
+
+    private function parseVoodooResponse($output)
+    {
+        $result = array(
+            'status' => '',
+            'error' => '',
+            'raw_type' => 'text',
+        );
+
+        $decodedJson = json_decode($output, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedJson)) {
+            $result['status'] = isset($decodedJson['status']) ? strtolower((string)$decodedJson['status']) : '';
+            $result['error'] = isset($decodedJson['error']) ? trim((string)$decodedJson['error']) : '';
+            $result['decoded'] = $decodedJson;
+            $result['raw_type'] = 'json';
+            return $result;
+        }
+
+        $xml = @simplexml_load_string($output);
+        if ($xml !== false) {
+            $resultCode = isset($xml->result) ? trim((string)$xml->result) : '';
+            $resultText = isset($xml->resultText) ? trim((string)$xml->resultText) : '';
+            $result['status'] = $resultCode === '0' || strtolower($resultText) === 'ok' ? 'success' : 'error';
+            $result['error'] = $result['status'] === 'success' ? '' : $resultText;
+            $result['decoded'] = array(
+                'result' => $resultCode,
+                'resultText' => $resultText,
+            );
+            $result['raw_type'] = 'xml';
+        }
+
+        return $result;
+    }
+
     /*
      * Listing of students
      */
@@ -465,10 +522,11 @@ class Student extends Admin_Controller{
                 $this->session->set_flashdata('info', 'Voodoo SMS settings are incomplete.');
                 redirect('student');
             } else {
+                $normalizedPhoneNumber = $this->normalizeVoodooDestination($phone_number);
                 $query = http_build_query(array(
                     'uid' => $this->data['sms_setting']['sms_username'],
                     'pass' => $this->data['sms_setting']['sms_password'],
-                    'dest' => $phone_number,
+                    'dest' => $normalizedPhoneNumber,
                     'orig' => $this->getVoodooOriginator(),
                     'msg' => $smsBody,
                     'format' => 'JSON',
@@ -489,14 +547,12 @@ class Student extends Admin_Controller{
                     redirect('student');
                 }
 
-                $result = json_decode($output, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $status = isset($result['status']) ? strtolower((string)$result['status']) : '';
-                    $error = isset($result['error']) ? trim((string)$result['error']) : '';
-                    if ($error !== '' || $status === 'error' || $status === 'failed') {
-                        $this->session->set_flashdata('info', 'Voodoo SMS error: '.($error !== '' ? $error : 'message not accepted by gateway.'));
-                        redirect('student');
-                    }
+                $result = $this->parseVoodooResponse($output);
+                $status = isset($result['status']) ? strtolower((string)$result['status']) : '';
+                $error = isset($result['error']) ? trim((string)$result['error']) : '';
+                if ($error !== '' || $status === 'error' || $status === 'failed') {
+                    $this->session->set_flashdata('info', 'Voodoo SMS error: '.($error !== '' ? $error : 'message not accepted by gateway.'));
+                    redirect('student');
                 }
 
                 $this->session->set_flashdata('success', 'New message sent!');
