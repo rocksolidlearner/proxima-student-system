@@ -2,6 +2,9 @@
     <?php if($this->session->flashdata('success')){  ?>
     toastr.success("<?php echo $this->session->flashdata('success'); ?>");
     <?php } ?>
+    <?php if($this->session->flashdata('info')){  ?>
+    toastr.info("<?php echo $this->session->flashdata('info'); ?>");
+    <?php } ?>
 </script>
 <style>
 .invertblack {
@@ -32,8 +35,16 @@
     font-size: 12px;
     margin: 0 6px 6px 0;
 }
+.portfolio-filter-box {
+    background: #f8fafc;
+    border: 1px solid #e7edf5;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 18px;
+}
 </style>
 <?php $id = urlencode(base64_encode($student['id'])); ?>
+<?php $portfolioExportUrl = base_url('student-portfolio-export/'.$id) . ($portfolio_filters_query ? '?'.$portfolio_filters_query : ''); ?>
 <div class="row">
     <div class="col-md-12">
         <div class="x_panel">
@@ -728,11 +739,64 @@
                     <li>
                         <a data-toggle="modal" data-target="#portfolioModal" href="#"><button class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Add Entry</button></a>
                     </li>
+                    <li>
+                        <a href="<?=$portfolioExportUrl?>"><button class="btn btn-sm btn-success"><i class="fa fa-file-pdf-o"></i> Export PDF</button></a>
+                    </li>
                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
                 </ul>
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
+                <?=form_open('student-profile/'.$id, array('method' => 'get', 'class' => 'portfolio-filter-box'))?>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select name="category" class="form-control">
+                                    <option value="">All categories</option>
+                                    <?php foreach($portfolio_filter_options['categories'] as $category){ ?>
+                                        <option value="<?=$category?>" <?=$portfolio_filters['category'] === $category ? 'selected' : ''?>><?=$category?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Evidence Type</label>
+                                <select name="evidence_type" class="form-control">
+                                    <option value="">All evidence types</option>
+                                    <?php foreach($portfolio_filter_options['evidence_types'] as $type){ ?>
+                                        <option value="<?=$type?>" <?=$portfolio_filters['evidence_type'] === $type ? 'selected' : ''?>><?=$type?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Tag</label>
+                                <select name="tag" class="form-control">
+                                    <option value="">All tags</option>
+                                    <?php foreach($portfolio_filter_options['tags'] as $tag){ ?>
+                                        <option value="<?=$tag?>" <?=$portfolio_filters['tag'] === $tag ? 'selected' : ''?>><?=$tag?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Search</label>
+                                <input type="text" name="search" class="form-control" value="<?=htmlspecialchars($portfolio_filters['search'], ENT_QUOTES, 'UTF-8')?>" placeholder="Search title, summary or notes">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <a href="<?=base_url('student-profile/'.$id)?>" class="btn btn-default"><i class="fa fa-refresh"></i> Reset</a>
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> Apply Filters</button>
+                        </div>
+                    </div>
+                <?=form_close()?>
+                <p class="text-muted">Showing <?=count($portfolio_items)?> portfolio entr<?=count($portfolio_items) == 1 ? 'y' : 'ies'?> for this view.</p>
                 <?php if(!empty($portfolio_items)){ foreach($portfolio_items as $item){ ?>
                     <div class="portfolio-timeline-item">
                         <div class="row">
@@ -769,7 +833,101 @@
                                 <?php if(!empty($item['file_name'])){ ?>
                                     <a href="<?=base_url('student-portfolio-download/'.$id.'/'.$item['id'])?>" class="btn btn-sm btn-success"><i class="fa fa-download"></i> Download</a>
                                 <?php } ?>
+                                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#portfolioEditModal<?=$item['id']?>"><i class="fa fa-pencil"></i> Edit</button>
                                 <a href="<?=base_url('student-portfolio-remove/'.$id.'/'.$item['id'])?>" class="btn btn-sm btn-danger" onclick="return confirm('Remove this ePortfolio entry?')"><i class="fa fa-trash"></i> Remove</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="portfolioEditModal<?=$item['id']?>">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Edit ePortfolio Entry</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <?=form_open_multipart('student-portfolio-edit/'.$id.'/'.$item['id'])?>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Title</label>
+                                                <input type="text" name="title" class="form-control" value="<?=htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8')?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Entry Date</label>
+                                                <input type="text" name="entry_date" class="date_picker form-control" value="<?=$item['entry_date']?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Category</label>
+                                                <select name="category" class="form-control">
+                                                    <option value="">Select category</option>
+                                                    <?php foreach($portfolio_categories as $category){ ?>
+                                                        <option value="<?=$category?>" <?=$item['category'] === $category ? 'selected' : ''?>><?=$category?></option>
+                                                    <?php } ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Evidence Type</label>
+                                                <select name="evidence_type" class="form-control">
+                                                    <option value="">Select evidence type</option>
+                                                    <?php foreach($portfolio_evidence_types as $type){ ?>
+                                                        <option value="<?=$type?>" <?=$item['evidence_type'] === $type ? 'selected' : ''?>><?=$type?></option>
+                                                    <?php } ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Grade / Outcome</label>
+                                                <input type="text" name="grade" class="form-control" value="<?=htmlspecialchars($item['grade'], ENT_QUOTES, 'UTF-8')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Tags</label>
+                                                <input type="text" name="tag_list" class="form-control" value="<?=htmlspecialchars($item['tag_list'], ENT_QUOTES, 'UTF-8')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Summary</label>
+                                                <textarea name="summary" rows="3" class="form-control"><?=htmlspecialchars($item['summary'], ENT_QUOTES, 'UTF-8')?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Teacher Note</label>
+                                                <textarea name="teacher_note" rows="4" class="form-control"><?=htmlspecialchars($item['teacher_note'], ENT_QUOTES, 'UTF-8')?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Student Reflection</label>
+                                                <textarea name="student_reflection" rows="4" class="form-control"><?=htmlspecialchars($item['student_reflection'], ENT_QUOTES, 'UTF-8')?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Replace Evidence File</label>
+                                                <input type="file" name="portfolio_file" class="form-control">
+                                                <?php if(!empty($item['file_name'])){ ?>
+                                                    <small class="text-muted">Current file: <?=$item['file_name']?></small>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Update Entry</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+                                <?=form_close()?>
                             </div>
                         </div>
                     </div>
