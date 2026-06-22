@@ -27,6 +27,10 @@ class Student_portfolio_model extends CI_Model
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
         $this->db->query($sql);
+
+        if (!$this->db->field_exists('private_note', 'student_portfolios')) {
+            $this->db->query("ALTER TABLE student_portfolios ADD COLUMN private_note TEXT NULL AFTER teacher_note");
+        }
     }
 
     function get_by_student($studentId, $filters = array())
@@ -50,8 +54,15 @@ class Student_portfolio_model extends CI_Model
             $this->db->like('title', $filters['search']);
             $this->db->or_like('summary', $filters['search']);
             $this->db->or_like('teacher_note', $filters['search']);
+            $this->db->or_like('private_note', $filters['search']);
             $this->db->or_like('student_reflection', $filters['search']);
             $this->db->group_end();
+        }
+        if (!empty($filters['from_date'])) {
+            $this->db->where('entry_date >=', $filters['from_date']);
+        }
+        if (!empty($filters['to_date'])) {
+            $this->db->where('entry_date <=', $filters['to_date']);
         }
         $this->db->order_by('entry_date', 'desc');
         $this->db->order_by('id', 'desc');
@@ -136,6 +147,40 @@ class Student_portfolio_model extends CI_Model
             'categories' => $categories,
             'evidence_types' => $evidenceTypes,
             'tags' => $tags,
+        );
+    }
+
+    function get_recent_entries($limit = 6)
+    {
+        $this->ensure_table();
+        $this->db->select('student_portfolios.*, students.std_name, students.admission_no, users.name as created_by_name');
+        $this->db->from('student_portfolios');
+        $this->db->join('students', 'students.id = student_portfolios.student_id', 'left');
+        $this->db->join('users', 'users.id = student_portfolios.created_by', 'left');
+        $this->db->order_by('student_portfolios.entry_date', 'desc');
+        $this->db->order_by('student_portfolios.id', 'desc');
+        $this->db->limit($limit);
+        return $this->db->get()->result_array();
+    }
+
+    function get_global_summary()
+    {
+        $this->ensure_table();
+        $items = $this->db->get('student_portfolios')->result_array();
+        $students = array();
+        $withFiles = 0;
+
+        foreach ($items as $item) {
+            $students[$item['student_id']] = true;
+            if (!empty($item['file_name'])) {
+                $withFiles++;
+            }
+        }
+
+        return array(
+            'total_entries' => count($items),
+            'students_covered' => count($students),
+            'files_uploaded' => $withFiles,
         );
     }
 }

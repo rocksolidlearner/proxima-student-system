@@ -98,6 +98,26 @@
     </div>
 </div>
 <div class="row">
+    <div class="col-md-4 col-sm-6 col-xs-12">
+        <div class="mini-stat">
+            <p>ePortfolio Entries</p>
+            <h3><?=$portfolio_summary_global['total_entries']?></h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 col-xs-12">
+        <div class="mini-stat">
+            <p>Students With Entries</p>
+            <h3><?=$portfolio_summary_global['students_covered']?></h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 col-xs-12">
+        <div class="mini-stat">
+            <p>Portfolio Files</p>
+            <h3><?=$portfolio_summary_global['files_uploaded']?></h3>
+        </div>
+    </div>
+</div>
+<div class="row">
     <div class="col-md-5 col-sm-12">
         <div class="x_panel">
             <div class="x_title">
@@ -146,6 +166,54 @@
                             <?php }}else{ ?>
                                 <tr>
                                     <td colspan="5" class="text-center">No CRM contacts yet.</td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2><i class="fa fa-folder-open"></i> Recent ePortfolio Activity</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Entry</th>
+                                <th>Category</th>
+                                <th>Evidence</th>
+                                <th>Date</th>
+                                <th>Added By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($recent_portfolio_entries)){ foreach($recent_portfolio_entries as $entry){ ?>
+                                <tr>
+                                    <td>
+                                        <strong><?=$entry['std_name'] ? $entry['std_name'] : 'Student'?></strong><br>
+                                        <small><?=$entry['admission_no'] ? $entry['admission_no'] : '-'?></small>
+                                    </td>
+                                    <td>
+                                        <?=$entry['title']?><br>
+                                        <small><?=$entry['grade'] ? 'Outcome: '.$entry['grade'] : '-'?></small>
+                                    </td>
+                                    <td><?=$entry['category'] ? $entry['category'] : '-'?></td>
+                                    <td><?=$entry['evidence_type'] ? $entry['evidence_type'] : '-'?></td>
+                                    <td><?=$entry['entry_date'] ? date('d-M-Y', strtotime($entry['entry_date'])) : '-'?></td>
+                                    <td><?=$entry['created_by_name'] ? $entry['created_by_name'] : '-'?></td>
+                                </tr>
+                            <?php }}else{ ?>
+                                <tr>
+                                    <td colspan="6" class="text-center">No ePortfolio activity yet.</td>
                                 </tr>
                             <?php } ?>
                         </tbody>

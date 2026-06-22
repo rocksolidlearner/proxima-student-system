@@ -129,6 +129,8 @@ class Student extends Admin_Controller{
             'evidence_type' => trim((string)$this->input->get('evidence_type')),
             'tag' => trim((string)$this->input->get('tag')),
             'search' => trim((string)$this->input->get('search')),
+            'from_date' => trim((string)$this->input->get('from_date')),
+            'to_date' => trim((string)$this->input->get('to_date')),
         );
     }
 
@@ -143,6 +145,7 @@ class Student extends Admin_Controller{
             'evidence_type' => $this->input->post('evidence_type'),
             'summary' => $this->input->post('summary'),
             'teacher_note' => $this->input->post('teacher_note'),
+            'private_note' => $this->input->post('private_note'),
             'student_reflection' => $this->input->post('student_reflection'),
             'grade' => $this->input->post('grade'),
         );

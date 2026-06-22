@@ -749,7 +749,7 @@
             <div class="x_content">
                 <?=form_open('student-profile/'.$id, array('method' => 'get', 'class' => 'portfolio-filter-box'))?>
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label>Category</label>
                                 <select name="category" class="form-control">
@@ -760,7 +760,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label>Evidence Type</label>
                                 <select name="evidence_type" class="form-control">
@@ -782,10 +782,22 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>Search</label>
                                 <input type="text" name="search" class="form-control" value="<?=htmlspecialchars($portfolio_filters['search'], ENT_QUOTES, 'UTF-8')?>" placeholder="Search title, summary or notes">
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>From</label>
+                                <input type="text" name="from_date" class="date_picker form-control" value="<?=htmlspecialchars($portfolio_filters['from_date'], ENT_QUOTES, 'UTF-8')?>" placeholder="YYYY-MM-DD">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>To</label>
+                                <input type="text" name="to_date" class="date_picker form-control" value="<?=htmlspecialchars($portfolio_filters['to_date'], ENT_QUOTES, 'UTF-8')?>" placeholder="YYYY-MM-DD">
                             </div>
                         </div>
                     </div>
@@ -820,6 +832,12 @@
                                     <div style="margin-top: 12px;">
                                         <strong>Teacher Note</strong>
                                         <p><?=nl2br(htmlspecialchars($item['teacher_note'], ENT_QUOTES, 'UTF-8'))?></p>
+                                    </div>
+                                <?php } ?>
+                                <?php if(!empty($item['private_note'])){ ?>
+                                    <div style="margin-top: 12px; background: #fff7e6; border-left: 4px solid #f0ad4e; padding: 10px 12px; border-radius: 6px;">
+                                        <strong>Private Staff Note</strong>
+                                        <p style="margin-bottom: 0;"><?=nl2br(htmlspecialchars($item['private_note'], ENT_QUOTES, 'UTF-8'))?></p>
                                     </div>
                                 <?php } ?>
                                 <?php if(!empty($item['student_reflection'])){ ?>
@@ -907,6 +925,12 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Private Staff Note</label>
+                                                <textarea name="private_note" rows="4" class="form-control" placeholder="Internal safeguarding, pastoral or review note"><?=htmlspecialchars(isset($item['private_note']) ? $item['private_note'] : '', ENT_QUOTES, 'UTF-8')?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>Student Reflection</label>
                                                 <textarea name="student_reflection" rows="4" class="form-control"><?=htmlspecialchars($item['student_reflection'], ENT_QUOTES, 'UTF-8')?></textarea>
@@ -1110,6 +1134,12 @@
                         </div>
                     </div>
                     <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Private Staff Note</label>
+                            <textarea name="private_note" rows="4" class="form-control" placeholder="Internal safeguarding, pastoral or review note"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
                         <div class="form-group">
                             <label>Student Reflection</label>
                             <textarea name="student_reflection" rows="4" class="form-control" placeholder="Student reflection or personal response"></textarea>

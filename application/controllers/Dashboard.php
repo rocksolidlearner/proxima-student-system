@@ -10,6 +10,7 @@ class Dashboard extends Admin_Controller{
     {
         parent::__construct();
         $this->load->model('Contacts_model', 'contacts');
+        $this->load->model('Student_portfolio_model', 'portfolio');
     }
 
     function index()
@@ -20,6 +21,8 @@ class Dashboard extends Admin_Controller{
         $data['profit'] = number_format($data['fee']['total_fee']-$data['expense']['total_expenses'],2);
         $data['crm_summary'] = $this->contacts->get_summary();
         $data['recent_contacts'] = $this->contacts->get_recent_contacts(8);
+        $data['portfolio_summary_global'] = $this->portfolio->get_global_summary();
+        $data['recent_portfolio_entries'] = $this->portfolio->get_recent_entries(6);
         $data['_view'] = 'dashboard';
         $this->load->view('layouts/main',$data);
     }
